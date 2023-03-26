@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <h1>주문 확인</h1>
+    <table border="1">
+        <tr>
+            <th>주문 번호</th>
+            <th>주문 상품</th>
+            <th>주문 가격</th>
+            <th>주문 시간</th>
+            <th>배달 장소</th>
+        </tr>
+        <tr>
+            <td>{{order.id}}</td>
+            <td>
+                {% for o in order_list %}
+                -{{o}} <br>
+                {% endfor %}
+            </td>
+            <td>{{order.price}}</td>
+            <td>{{order.order_time}}</td>
+            <td>{{order.address}}</td>
+        </tr>
+    </table>
+</body>
+</html>
