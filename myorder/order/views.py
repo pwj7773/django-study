@@ -72,10 +72,10 @@ def search(request) :
     return render(request,'order/order_list.html',context)
 
 def show(request,id) :
-    order = Order.objects.filter(id = id)
+    order = Order.objects.get(id = id)
     context = { 
         'order' : order,
-        'text_list' : order[0].order_text.split(",")
+        'text_list' : order.order_text.split(",")
     }
     return render(request,'order/order_show.html/',context)
 
