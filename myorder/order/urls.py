@@ -13,8 +13,8 @@ urlpatterns = [
     path('<int:id>/delete/', views.delete),
     # 주문 검색
     path('search/', views.search),
-    # 주문 하나확인
-    path('<int:id>/', views.read),
+    # 주문 상세 내역서
+    path('<int:id>/', views.show),
     # 회원가입
     path('signup/',views.signup),
     # 로그인

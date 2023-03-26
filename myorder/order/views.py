@@ -71,13 +71,13 @@ def search(request) :
     }
     return render(request,'order/order_list.html',context)
 
-def read(request,id) :
-    order = Order.objects.get(id = id)
+def show(request,id) :
+    order = Order.objects.filter(id = id)
     context = { 
         'order' : order,
-        'order_list' : order.order_text.split(',')
+        'text_list' : order[0].order_text.split(",")
     }
-    return render(request,'order/read.html/',context)
+    return render(request,'order/order_show.html/',context)
 
 def signup(request) :
     if request.method == 'GET' :
