@@ -1,0 +1,8 @@
+# db 연결설정 파일
+[client]
+database = mydb
+user = root
+password = root
+host = 127.0.0.1
+port = 3306
+default-charset = utf-8

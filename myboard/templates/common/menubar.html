@@ -1,0 +1,10 @@
+<!-- vscode에서 .하고 자동완성하면 -->
+<div>
+    <a href="/">홈</a>&nbsp;&nbsp;
+    <a href="/signup">회원가입</a>&nbsp;&nbsp;
+    <a href="">로그인</a>&nbsp;&nbsp;
+    <a href="">로그아웃</a>&nbsp;&nbsp;
+    <!-- 아래의 호출법은 주소를 하드코딩하는게 아니라 -->
+    <!-- urls.py에 정의된 name속성을 통해서 이동 -->
+    <a href="{% url 'index' %}">게시판으로 이동</a>
+</div>

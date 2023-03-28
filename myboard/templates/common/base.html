@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 틀이 되는 템플릿의 title이 덮어써지지 않도록 -->
+    <title>{% block title%}{% endblock title %}</title>
+    <!-- 스타일 import -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+     <!-- 내가 넣고 싶은 조각(frafment)을 include -->
+     {% include 'common/menubar.html'%}
+    <!-- 다른 내용을 삽입할 자리 만들기 -->
+    {% block body %}{% endblock body %}
+</body>
+</html>

@@ -1,0 +1,27 @@
+{# common/base.html을 상속받겠음 #}
+{% extends 'common/base.html' %}
+{% block title %}[게시판]{% endblock title%}
+
+{% block body %}
+<h1>글 보기</h1>
+<table>
+  <tr>
+    <th>{{ board.id }}</th>
+    <th>{{ board.title }}</th>
+    <td>{{ board.view_count }}</td>
+  </tr>
+  <tr>
+    <td colspan="2">{{ board.input_date|date:'y.m.d H:i' }}</td>
+    <td>{{ board.writer }}</td>
+  </tr>
+  <tr>
+    <td colspan="4">{{ board.content }}</td>
+  </tr>
+</table>
+<!-- 수정/삭제 -->
+<a href="{% url 'update' board.id %}">수정</a> /
+<a href="{% url 'delete' board.id %}">삭제</a>
+<form action="{% url 'index' %}">
+  <input type="submit" value="목록으로" />
+</form>
+{% endblock body %}

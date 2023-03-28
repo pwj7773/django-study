@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>안녕하세요</h1>
+
+    <!-- django에서 제공하는 user모델 -->
+     <h2>
+        Hello, 
+        {% if user.is_authenticated %} <!-- 유저 정보가 있으면 username 표시 -->
+            {{ user.username }}
+        {% else %}
+            GUEST
+        {% endif %}
+    </h2>
+
+     <ul>
+        {% if not user.is_authenticated %}
+            <li>
+                <a href="signup/">회원가입</a>
+            </li>
+            <li>
+                <a href="login/">로그인</a>
+            </li>
+        {% else %}
+            <li>
+                <a href="logout/">로그아웃</a>
+            </li>
+        {% endif %}
+        <li>
+            <a href="board/">게시판으로 가기</a>
+        </li>
+     </ul>
+</body>
+</html>
