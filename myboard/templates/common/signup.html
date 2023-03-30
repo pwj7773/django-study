@@ -12,6 +12,18 @@
         {% csrf_token %}
         <table>
             <!-- 각 태그에 적용한 name속성은 UserCreationForm에서 제공하는 필드 이름과 같다 -->
+            <tr>
+                <th>성</th>
+                <td>
+                    <input type="text" name="last_name">
+                </td>
+            </tr>
+            <tr>
+                <th>이름</th>
+                <td>
+                    <input type="text" name="first_name">
+                </td>
+            </tr>
             <tr> <!-- 아이디 -->
                 <th>아이디</th>
                 <td>
@@ -27,6 +39,12 @@
             <tr> <!-- 비밀번호 확인 -->
                 <th>비밀번호 확인</th>
                 <td><input type="password" name="password2">
+                </td>
+            </tr>
+            <tr> <!-- 이메일 -->
+                <th>이메일</th>
+                <td>
+                    <input type="email" name="email">
                 </td>
             </tr>
             <tr>

@@ -5,8 +5,9 @@
 {% block body %}
 <h1>글쓰기</h1>
 <!-- 상위 디렉토리로 이동한 후에 write/ 호출 -->
-<form action="{% url 'write' %}" method="post">
+<form action="{% url 'board:write' %}" method="post">
   {% csrf_token %}
+  
   <table>
     <tr>
       <th>제목</th>
@@ -15,12 +16,12 @@
 
     <!-- 세션에 writer가 없으면 해당 tr 표시 -->
     <!-- writer가 있으면 해당 tr 표시 안됨 -->
-    {% if not request.session.writer %}
+    <!-- {% if not request.session.writer %}
     <tr>
       <th>글쓴이</th>
       <td><input type="text" name="writer" /></td>
     </tr>
-    {% endif %}
+    {% endif %} -->
 
     <tr>
       <th>내용</th>

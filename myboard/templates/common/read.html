@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+<script>
+    function confirmDelete(){
+        let c = confirm('정말 삭제할까요? 게시물도 사라집니다')
+        if(c){
+            return location.href = '/delete/'
+        }
+    }
+</script>
+</head>
+<body>
+    <h1>회원 정보</h1>
+    <table>
+        <tr>
+            <th>이름</th>
+            <td>{{ user.last_name }} {{ user.first_name }} </td>
+        </tr>
+        <tr>
+            <th>아이디</th>
+            <td>{{ user.username }}</td>
+        </tr>
+        <tr>
+            <th>이메일</th>
+            <td>{{ user.email }}</td>
+        </tr>
+        <tr>
+            <th>
+                <a href="{% url 'common:update' %}">수정</a>
+            </th>
+            <th>
+                <a onclick="confirmDelete()">탈퇴</a>
+            </th>
+        </tr>
+    </table>
+    
+</body>
+</html>

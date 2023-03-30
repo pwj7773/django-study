@@ -1,8 +1,120 @@
 {# common/base.html을 상속받겠음 #}
 {% extends 'common/base.html' %}
 {% block title %}[게시판]{% endblock title%}
-
 {% block body %}
+<script>
+  function showUpdateForm(param){
+    // .../board/0/update_reply?rid=0
+    location.href= 'update_reply?rid=' + param;
+  }
+
+  $(document).ready(function(){
+    // console.log('여기는 read');
+    $('#btnupdate').hide();
+    loadReplyList();
+  });
+
+function writeAjax(){
+  let replyText = $('#replyText').val();
+  $.ajax({
+    url:'write_reply/',
+    type:'POST',
+    headers:{'X-CSRFTOKEN': '{{ csrf_token }}'},
+    data:{'replyText' : replyText},
+    success:function(){
+      loadReplyList();
+      $('#replyText').val('');
+    }
+  });
+}
+
+  function update_ajax(rid,replyContent){
+    $.ajax({
+      success: function(){
+        // document.getElementById('replyText').value = replyContent;
+        $('#replyText').val(replyContent);
+        $('#updateRid').val(rid);
+        $('#btnupdate').show();
+        $('#btnwrite').hide();
+      }
+    })
+  }
+
+  function updateAjax(){
+    let rid = $('#updateRid').val();
+    let replyText = $('#replyText').val();
+    $.ajax({
+      url:'update_reply/',
+      type:'POST',
+      headers:{'X-CSRFTOKEN': '{{ csrf_token }}'},
+      data:{
+        'rid' : rid,
+        'replyText' : replyText
+      
+      },
+      success: function(){
+        $('#replyText').val('');
+        $('#btnupdate').hide();
+        $('#btnwrite').show();
+        loadReplyList();
+      }
+    });
+  }
+
+  function delete_ajax(param){
+    let id = '{{board.id}}'
+    console.log(id)
+    let rid = param
+    console.log(rid)
+    $.ajax({
+      url: 'delete_reply/' + param+'/',
+      type: 'post',
+      headers:{'X-CSRFTOKEN': '{{ csrf_token }}'},
+      success: function(result){
+        $('#replyText').val('');
+        $('#btnupdate').hide();
+        $('#btnwrite').show();
+        loadReplyList();
+      }
+    })
+  }
+
+  function loadReplyList(){
+    // console.log('여기는 loadReplyList')
+    let bNum = '{{ board.id }}';
+    console.log(bNum);
+    $.ajax({
+      url:'/board/load_reply/',
+      type:'post',
+      headers:{'X-CSRFTOKEN': '{{ csrf_token }}'},
+      data:{'id': bNum},
+      success: function(response){
+        // console.log(response);
+        console.log(JSON.parse(response['response']));
+
+        let replyList = JSON.parse(response['response']);
+        
+        let str = '';
+        $.each(replyList, function(i, item){
+          let replyContent = item.fields.reply_content;
+          let replyUser = item.fields.user.username;
+          // 바로 화면에 붙이려면 append
+          // $('#replyList').append(replyContent + '<br>');
+
+          str += replyContent;
+          str += " <input type='button' value='댓글 수정' onclick='javascript:update_ajax(" + item.pk + ", \"" + replyContent + "\")'>";
+          str += " <input type='button' value='댓글 삭제' onclick='javascript:delete_ajax(" + item.pk + ")'>";
+          str += '<br>';
+          str += '<br>';
+          
+        })
+        // html을 만들어서 한 번에 넣으려면 html
+        $('#replyList').html(str);
+
+      }
+    });
+  }
+</script>
 <h1>글 보기</h1>
 <table>
   <tr>
@@ -19,9 +131,41 @@
   </tr>
 </table>
 <!-- 수정/삭제 -->
-<a href="{% url 'update' board.id %}">수정</a> /
-<a href="{% url 'delete' board.id %}">삭제</a>
-<form action="{% url 'index' %}">
+<!-- username끼리 비교 -->
+{% if board.author.username == user.username %}
+  <a href="{% url 'board:update' board.id %}">글수정</a> /
+  <a href="{% url 'board:delete' board.id %}">글삭제</a>
+{% endif %}
+<!-- board.author 는 user하고 비교ㅏ -->
+<div id="replyArea">
+  <!-- 댓글 목록 표시 -->
+  <div id="replyList" >
+    <!-- board객체 뿐 아니라 board와 fk로 엮인 객체는 -->
+    <!-- board.모델이름_set으로 가져올 수 있다 -->
+    <!-- {% if board.reply_set %}
+      {% for reply in board.reply_set.all %} 
+        {{ reply }}&nbsp;&nbsp;&nbsp;
+        <a href="#" onclick="showUpdateForm('{{reply.id}}')">수정</a>/
+        <a href="{% url 'board:delete_reply' id=board.id rid=reply.id %}">삭제</a>
+        <br>
+      {% endfor %}
+    {% else %}
+      <p>등록된 댓글이 없습니다</p>
+    {% endif %} -->
+    <br>
+    <br>
+
+  </div>
+  <!-- 댓글 입력 폼-->
+  <div id="replyForm">
+    <textarea id="replyText"></textarea>
+    <input type="button" onclick="writeAjax()" id="btnwrite" value="댓글쓰기">
+    <input type="button" onclick="updateAjax()" id="btnupdate" value="댓글수정" >
+    <input type="hidden" id="updateRid">
+  </div>
+</div>
+
+<form action="{% url 'board:index' %}">
   <input type="submit" value="목록으로" />
 </form>
 {% endblock body %}

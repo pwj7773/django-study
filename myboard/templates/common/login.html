@@ -8,8 +8,12 @@
 </head>
 <body>
     <h1>로그인</h1>
-    <form action="../login/" method="post">
+    <form action="{% url 'common:login' %}" method="post">
         {% csrf_token %}
+        <!-- 로그인 성공 후 이동할 url -->
+        <!-- hidden태그 next의 value로 next 사용하면 주소의 쿼리스트링에 있던 ?next=주소로 이동 -->
+        <!-- value로 특정 문자열을 사용하면 해당하는 주소로 이동 -->
+        <input type="hidden" name="next" value="{{ next }}">
         <table>
             <tr>
                 <th>아이디</th>

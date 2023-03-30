@@ -1,8 +1,11 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.core.paginator import Paginator
+from django.contrib.auth.decorators import login_required
 
-from .models import Board
+from django.core import serializers
+from json import loads
+from .models import Board, Reply
 # Create your views here.
 
 # 게시판 목록보기
@@ -45,7 +48,7 @@ def index(request):
     # 페이징 넣기
     # Paginator(목록, 목록에 보여줄 개수)
     paginator = Paginator(result, 10)
-
+    
     # Paginator 클래스를 이용해서 자른 목록의 단위에서
     # 몇 번째 단위를 보여줄 것인지 정한다
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -61,12 +64,16 @@ def read(request, id):
 
     board = Board.objects.get(id = id)
 
+    # 고전적인 방법으로 댓글 가져오기
+    # reply_list = Reply.objects.filter(board_obj = id).order_by('-id')
+
     # 조회수
     board.view_count = board.view_count + 1
     board.save()
 
     context = {
-        'board':board
+        'board':board,
+        # 'replyList':reply_list
     }
 
     return render(request, 'board/read.html', context)
@@ -75,7 +82,9 @@ def read(request, id):
 def home(request):
     return HttpResponseRedirect('/board/')
 
-
+# 내가 따로 만든 로그인url이 있다면 
+# 넘겨야 한다
+@login_required(login_url='common:login')
 def write(request):
 
     if request.method == 'GET':  # 요청 방식이 GET이면 화면 표시
@@ -85,14 +94,8 @@ def write(request):
         # DB저장
         title = request.POST['title']
         content = request.POST['content']
+        author = request.user #요청에 들어있는 User 객체
         
-        # 현재 세션 정보에서 writer라는 키를 가진 데이ㅣ터 취득
-        session_writer = request.session.get('writer')
-        if not session_writer:  # 세션에 정보가 없는 경우
-            # 폼에서 가져온 writer값 세션에 저장
-            request.session['writer'] = request.POST['writer']
-
-        print(session_writer)
         
         # 객체.save()
         # board = Board(
@@ -105,31 +108,106 @@ def write(request):
         # 모델.object.create(값)
         Board.objects.create(
             title = title,
-            writer = request.session.get('writer'),  # 세션에 있는 값 저장
+            author = author,  # 유저 객체 저장
             content = content
         )
         return HttpResponseRedirect('/board/')
     
-
+@login_required(login_url='common:login')
 def update(request, id):
     
     board = Board.objects.get(id = id)
 
+    # 글쓴이와 현재 접속한 사용자의 username이 다르면 목록으로 
+    if board.author.username != request.user.username:
+        return HttpResponseRedirect('/board/')
+    
     if request.method == 'GET':
         context = {'board': board }
         return render(request, 'board/board_update.html', context)
     else:
         board.title = request.POST['title']
-        board.writer = request.POST['writer']
         board.content = request.POST['content']
         board.save()
-
     return HttpResponseRedirect('/board/')
 
-
+@login_required(login_url='common:login')
 def delete(request, id):
     print(id)
     # 해당 객체를 가져와서 삭제
-    Board.objects.get(id = id).delete()
+    board = Board.objects.get(id = id)
 
+    # 글 작성자의 id와 접속한 사람의 id가 같을 때
+    if board.author.username == request.user.username:
+        board.delete()
+    # 다를 때
     return HttpResponseRedirect('/board/')
+
+def write_reply(request, id):
+    print(request.POST)
+    
+    user = request.user
+    reply_text = request.POST['replyText']
+    
+    # Reply.objects.create(
+    #     user = user,
+    #     reply_content = reply_text,
+    #     board_obj = Board.objects.get(id = id)
+    # )
+
+    # queryset 이용
+    board = Board.objects.get(id=id)
+    board.reply_set.create(
+        reply_content = reply_text,
+        user = user
+    )
+
+    return HttpResponseRedirect('/board/'+ str(id))
+
+def delete_reply(request, id, rid):
+    print(f'id:{id} rid:{rid}')
+  
+    Board.objects.get(id=id).reply_set.get(id=rid).delete()
+    # Reply.objects.get(id = rid).delete() 위에 코드랑 같은 내용
+
+    # return HttpResponseRedirect('/board/'+ str(id))
+    return JsonResponse({"result" : "박승인"})
+
+def update_reply(request, id):
+    data = request.POST
+    rid = data['rid']
+    print('여기',id)
+    print(rid)
+    reply = Board.objects.get(id = id).reply_set.get(id = rid)
+    # 폼에 들어있던 새로운 댓글로 수정
+    reply.reply_content = request.POST['replyText']
+    reply.save()
+
+    return HttpResponseRedirect('/board/'+ str(id))
+    
+def call_ajax(request):
+    print('성공?')
+    print(request.POST)
+
+    # JSON.stringify 하면 아래 표현 사용 불가
+    # print(request.POST['txt'])
+    
+    data = loads(request.body)
+    print('템플릿에서 보낸 데이터',data)
+    print(data['txt'])
+    print(type(data))
+    return JsonResponse({'result': 'ㅊㅋ'})
+
+def load_reply(request):
+    print(request.POST['id'])
+    id = request.POST['id']
+
+    # 방법 1
+    # reply_list = Reply.objects.filter(board = id)
+
+    # 방법2
+    reply_list = Board.objects.get(id=id).reply_set.all()
+
+    # queryset 자체로는 js에서 알 수 없는 타입이여서 json타입으로
+    serialized_list = serializers.serialize('json', reply_list)
+    return JsonResponse({'response': serialized_list })

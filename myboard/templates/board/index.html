@@ -1,11 +1,35 @@
 {# common/base.html을 상속받겠음 #}
 {% extends 'common/base.html' %}
 {% block title %}[게시판]{% endblock title%}
-
 {% block body %}
-  <h1>게시판</h1>
-  <a href="{% url 'write' %}">글쓰기</a>
+<script>
+  $(document).ready(function(){
+    // alert('ㅎㅇ');
+  }); 
+  
+  function callFunction(){
+    let data = { 'txt': 'hello' };
+    // ajax로 서버와 통신을 할 때에도 csrf토큰은 있어야 한다
+    $.ajax({
+      url: '/board/callAjax/',
+      type: 'post',
+      headers: {'X-CSRFTOKEN': '{{ csrf_token }}'},
+      data: JSON.stringify(data), // js객체를 문자열화
+      success: function(res){
+        console.log(res);
+        console.log(res.result); // res 객체에 들어있는 result 필드
+        console.log('성공');
+      }
+    });
+  }
+</script>  
+<h1>게시판</h1>
+  {% if user.is_authenticated %}
+    <a href="{% url 'board:write' %}">글쓰기</a>
+  {% endif %}
   {% if page_obj %}
+  <input type="button" value="눌러보세요" onclick="callFunction();">
+  <div id="result"></div>
   <table border="1">
     <tr>
       <th>번호</th>
@@ -20,9 +44,9 @@
       <td>
         <!-- 파라미터가 있는 주소를 호출할 때 -->
         <!-- name뒤에 한 칸 띄우고 파라미터 값 지정 -->
-        <a href="{% url 'detail' board.id %}">{{ board.title }}</a>
+        <a href="{% url 'board:detail' board.id %}">{{ board.title }}</a>
       </td>
-      <td>{{ board.writer }}</td>
+      <td>{{ board.author }} {{ board.author_id }} {{ board.author.username }}</td>
       <td>{{ board.input_date }}</td>
       <td>{{ board.view_count }}</td>
     </tr>
@@ -40,11 +64,13 @@
       <option value="title" selected="selected">제목</option>
       {% else %}
       <option value="title">제목</option>
-      {% endif %} {% if searchType == 'writer' %}
+      {% endif %} 
+      {% if searchType == 'writer' %}
       <option value="writer" selected="selected">글쓴이</option>
       {% else %}
       <option value="writer">글쓴이</option>
-      {% endif %} {% if searchType == 'content' %}
+      {% endif %} 
+      {% if searchType == 'content' %}
       <option value="content" selected="selected">내용</option>
       {% else %}
       <option value="content">내용</option>
