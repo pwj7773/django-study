@@ -69,6 +69,7 @@ def read(request, id):
 
     # 조회수
     board.view_count = board.view_count + 1
+    print("왜 올라?")
     board.save()
 
     context = {
@@ -162,7 +163,7 @@ def write_reply(request, id):
         user = user
     )
 
-    return HttpResponseRedirect('/board/'+ str(id))
+    return JsonResponse({"asdasd" : " asd"})
 
 def delete_reply(request, id, rid):
     print(f'id:{id} rid:{rid}')

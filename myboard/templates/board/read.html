@@ -29,15 +29,11 @@ function writeAjax(){
 }
 
   function update_ajax(rid,replyContent){
-    $.ajax({
-      success: function(){
-        // document.getElementById('replyText').value = replyContent;
-        $('#replyText').val(replyContent);
-        $('#updateRid').val(rid);
-        $('#btnupdate').show();
-        $('#btnwrite').hide();
-      }
-    })
+      // document.getElementById('replyText').value = replyContent;
+      $('#replyText').val(replyContent);
+      $('#updateRid').val(rid);
+      $('#btnupdate').show();
+      $('#btnwrite').hide();
   }
 
   function updateAjax(){
