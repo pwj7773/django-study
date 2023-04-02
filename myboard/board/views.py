@@ -184,7 +184,7 @@ def update_reply(request, id):
     reply.reply_content = request.POST['replyText']
     reply.save()
 
-    return HttpResponseRedirect('/board/'+ str(id))
+    return JsonResponse("리턴",safe=False)
     
 def call_ajax(request):
     print('성공?')
