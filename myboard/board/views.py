@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, FileResponse
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
 
@@ -69,7 +69,6 @@ def read(request, id):
 
     # 조회수
     board.view_count = board.view_count + 1
-    print("왜 올라?")
     board.save()
 
     context = {
@@ -92,26 +91,37 @@ def write(request):
         return render(request, 'board/board_form.html')
     
     else:  # 요청 방식이 POST면
+        print(request.POST)
+        print(request.FILES)
         # DB저장
         title = request.POST['title']
         content = request.POST['content']
         author = request.user #요청에 들어있는 User 객체
-        
-        
+           
         # 객체.save()
-        # board = Board(
-        #     title = title,
-        #     writer = writer,
-        #     content = content
-        # )
-        # board.save()
-        
-        # 모델.object.create(값)
-        Board.objects.create(
+        board = Board(
             title = title,
-            author = author,  # 유저 객체 저장
+            author = author,
             content = content
         )
+        # get 사용하는 이유는
+        # 딕셔너리에 존재하지 않는 키를 딕셔너리[키] ㅡ> keyerror
+        # 딕셔너리.get('키') -> none
+        if request.FILES.get('uploadFile'):
+            upload_file = request.FILES['uploadFile']
+            # 요청에 들어있던 첨부파일을 모델에 설정
+            board.attached_file = upload_file
+            board.original_file_name = upload_file.name
+        
+        board.save()
+        
+        # 모델.object.create(값)
+        # Board.objects.create(
+        #     title = title,
+        #     author = author,  # 유저 객체 저장
+        #     content = content
+        # )
+        
         return HttpResponseRedirect('/board/')
     
 @login_required(login_url='common:login')
@@ -129,6 +139,17 @@ def update(request, id):
     else:
         board.title = request.POST['title']
         board.content = request.POST['content']
+
+        # 첨부파일이 있으면 
+        if request.FILES.get('uploadFile'):
+            upload_file = request.FILES['uploadFile']
+            # 요청에 들어있던 첨부파일을 모델에 설정
+            board.attached_file = upload_file
+            board.original_file_name = upload_file.name
+        else: # 파일이 없으면
+            board.attached_file = None
+            board.original_file_name = None
+
         board.save()
     return HttpResponseRedirect('/board/')
 
@@ -148,8 +169,11 @@ def write_reply(request, id):
     print(request.POST)
     
     user = request.user
-    reply_text = request.POST['replyText']
-    
+    reply = loads(request.body) #요청의 body를 해석
+    print(reply)
+
+    reply_text = reply['replyText']
+
     # Reply.objects.create(
     #     user = user,
     #     reply_content = reply_text,
@@ -163,29 +187,51 @@ def write_reply(request, id):
         user = user
     )
 
-    return JsonResponse({"asdasd" : " asd"})
+    # return HttpResponseRedirect('/board/'+ str(id))
+    return JsonResponse({'reault': 'success'})
 
-def delete_reply(request, id, rid):
-    print(f'id:{id} rid:{rid}')
+def delete_reply(request, id):
+    # print(f'id:{id} rid:{rid}')
   
+    rid = (loads(request.body))['rid']
+
     Board.objects.get(id=id).reply_set.get(id=rid).delete()
     # Reply.objects.get(id = rid).delete() 위에 코드랑 같은 내용
 
     # return HttpResponseRedirect('/board/'+ str(id))
-    return JsonResponse({"result" : "박승인"})
+    return JsonResponse({"result" : "success"})
 
 def update_reply(request, id):
-    data = request.POST
-    rid = data['rid']
-    print('여기',id)
-    print(rid)
-    reply = Board.objects.get(id = id).reply_set.get(id = rid)
-    # 폼에 들어있던 새로운 댓글로 수정
-    reply.reply_content = request.POST['replyText']
-    reply.save()
 
-    return JsonResponse("리턴",safe=False)
+    if request.method == 'GET':
+        rid = request.GET['rid']
+
+        reply = Board.objects.get(id = id).reply_set.get(id = rid)
+
+        context = {
+            # rid에 해당하는 reply 객체의 id, replyText
+            'rid': rid,
+            'replyText': reply.reply_content
+        }
+        
+        return JsonResponse(context)
     
+    else :
+        # rid = request.POST['rid']
+        request_body = loads(request.body)
+
+        rid = request_body['rid']
+        reply_text = request_body['replyText']
+
+        reply = Board.objects.get(id = id).reply_set.get(id = rid)
+
+        # 폼에 들어있던 새로운 댓글로 수정
+        reply.reply_content = reply_text
+        reply.save() # 이외의 정보가 바뀌는게 없으므로 바로 저장
+
+        # return HttpResponseRedirect('/board/'+ str(id))
+        return JsonResponse({'result': 'success'})
+
 def call_ajax(request):
     print('성공?')
     print(request.POST)
@@ -199,16 +245,35 @@ def call_ajax(request):
     print(type(data))
     return JsonResponse({'result': 'ㅊㅋ'})
 
-def load_reply(request):
-    print(request.POST['id'])
-    id = request.POST['id']
+def load_reply(request, id):
+    
+    reply_list = Board.objects.get(id = id).reply_set.all()
 
-    # 방법 1
-    # reply_list = Reply.objects.filter(board = id)
+    reply_dict_list = []
+    # reply_list 정보를 가지고 dictionary 만들기
+    for reply in reply_list:
+        reply_dict = {
+            'id': reply.id,
+            'username': reply.user.username,
+            'replyText': reply.reply_content,
+            'inputDate': reply.input_date
+        }
+    
+        reply_dict_list.append(reply_dict)
 
-    # 방법2
-    reply_list = Board.objects.get(id=id).reply_set.all()
+    context = {'replyList': reply_dict_list}
 
-    # queryset 자체로는 js에서 알 수 없는 타입이여서 json타입으로
-    serialized_list = serializers.serialize('json', reply_list)
-    return JsonResponse({'response': serialized_list })
+    return JsonResponse(context)
+
+def download(request,id):
+    print('download/',id)
+    
+    board = Board.objects.get(id = id)
+    attached_file = board.attached_file
+    original_file_name = board.original_file_name
+    
+    # 글 번호에 달려있던 첨부파일로 파일형식 응답 객체 생성
+    response = FileResponse(attached_file)
+    response["Content-Disposition"] = 'attachment; filename=%s' %original_file_name
+
+    return response

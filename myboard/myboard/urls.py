@@ -16,9 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
+# 파일업로드 하면서 추가
+from django.conf import settings # 현재 프로젝트의 settings.py
+from django.conf.urls.static import static
+
 urlpatterns = [
     path('', include('common.urls')),
     path("admin/", admin.site.urls),
     path('board/', include('board.urls')),
     
-]
+] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)

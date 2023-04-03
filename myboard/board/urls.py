@@ -18,7 +18,8 @@ urlpatterns = [
     # 댓글 쓰기 주소
     path('<int:id>/write_reply/', views.write_reply, name='write_reply'),
     # 댓글 삭제 주소(id:글번호, rid:댓글번호)
-    path('<int:id>/delete_reply/<int:rid>/', views.delete_reply, name='delete_reply'),
+    path('<int:id>/delete_reply/', views.delete_reply, name='delete_reply'),
+    #path('<int:id>/delete_reply/<int:rid>/', views.delete_reply, name='delete_reply'),
     # 댓글 수정
     path('<int:id>/update_reply/', views.update_reply, name='update_reply'),
 
@@ -26,7 +27,10 @@ urlpatterns = [
     # Ajax
     path('callAjax/', views.call_ajax),
     # ajax 댓글 목록
-    path('load_reply/', views.load_reply),
+    path('<int:id>/load_reply/', views.load_reply, name='load_reply'),
+
+    # 파일
+    path('<int:id>/download/', views.download, name='download'),
     
 
 ]

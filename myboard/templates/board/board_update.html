@@ -3,9 +3,25 @@
 {% block title %}[글 수정하기]{% endblock title%}
 
 {% block body %}
+<script>
+  function validateFile(){
+    let file = document.getElementById('uploadFile');
+    console.log(file.value);
+
+    // 첨부파일이 있는데 수정화면에 없을 때
+    if('{{ board.original_file_name }}' !== '' && file.value === '' ){
+      let go = confirm('파일이 첨부되지 않았습니다. 계속하시겠습니까?')
+      if(go == true){
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+</script>
 <h1>글 수정하기</h1>
 
-<form action="{% url 'board:update' board.id %}" method="post">
+<form action="{% url 'board:update' board.id %}" method="post" enctype="multipart/form-data" onsubmit="return validateFile();">
   {% csrf_token %}
   <table>
     <tr>
@@ -21,8 +37,22 @@
     <tr>
       <th>내용</th>
       <td>
-        <textarea name="content" cols="30" rows="10">{{ board.content }}</textarea
+        <textarea name="content" cols="30" rows="10">
+        {{ board.content }}</textarea
         >
+      </td>
+    </tr>
+    <tr>
+      <th>첨부파일</th>
+      <td>
+        현재 첨부파일:
+        {% if board.original_file_name %}
+          {{ board.original_file_name }}
+        {% else %}
+          없음
+        {% endif %}
+        <br>
+        <input type="file" name="uploadFile" id="uploadFile" value="{{ board.original_file_name }}">
       </td>
     </tr>
     <tr>

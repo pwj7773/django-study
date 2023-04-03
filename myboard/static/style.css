@@ -19,3 +19,7 @@ a:hover {
 .color{
     color: blueviolet;
 }
+
+.replyCount{
+  font-size: smaller;
+}

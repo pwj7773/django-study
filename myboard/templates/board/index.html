@@ -44,7 +44,13 @@
       <td>
         <!-- 파라미터가 있는 주소를 호출할 때 -->
         <!-- name뒤에 한 칸 띄우고 파라미터 값 지정 -->
-        <a href="{% url 'board:detail' board.id %}">{{ board.title }}</a>
+        <a href="{% url 'board:detail' board.id %}">
+          {{ board.title }}&nbsp;
+          <span class="replyCount">[{{ board.reply_set.all.count }}]</span>
+          {% if board.original_file_name %}
+          <img src="../../static/file_download.png" width="20" height="20">
+          {% endif %}
+        </a>
       </td>
       <td>{{ board.author }} {{ board.author_id }} {{ board.author.username }}</td>
       <td>{{ board.input_date }}</td>
